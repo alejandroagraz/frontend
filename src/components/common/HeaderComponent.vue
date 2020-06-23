@@ -1,12 +1,18 @@
 <template>
   <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <router-link to="/home" id="logo" class="menu active">
+      <router-link to="/home" id="logo" class="menu active" v-if="location == 'login'">
         <img src="../../assets/images/logo2.png" class="app-logo" alt="Logotipo" />
         <span id="brand">
           <strong>Payment</strong>Gateway
         </span>
       </router-link>
+      <div id="logo" class="menu active" v-else>
+        <img src="../../assets/images/logo2.png" class="app-logo" alt="Logotipo" />
+        <span id="brand">
+          <strong>Payment</strong>Gateway
+        </span>
+      </div>
       <button
         class="navbar-toggler"
         type="button"
@@ -20,11 +26,11 @@
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="nav">
-          <li class="nav-item">
-            <router-link to="/home" class="nav-link">HOME</router-link>
+          <li class="nav-item" v-if="location == 'payment'">
+            <span class="fas fa-sign-out-alt" style="font-size:48px;" @click="logout"></span>
           </li>
-          <li class="nav-item">
-            <router-link to="/payment" class="nav-link">PAYMENT</router-link>
+          <li class="nav-item" v-if="location == 'home'">
+            <span class="fas fa-sign-in-alt" style="font-size:48px;" @click="login"></span>
           </li>
         </ul>
       </div>
@@ -32,10 +38,33 @@
   </header>
 </template>
 <script>
+import swal from "sweetalert";
+
 export default {
   name: "HeaderComponent",
-  data() {
-    return {};
+  props: ['location'],
+  methods: {
+    login() {
+      this.$router.push('/login');
+    },
+    logout() {
+      this.$store.dispatch("logout").then(res => {
+        if(res.data.status == 'success') {
+          this.$router.push('/home');
+          swal(
+            'Log out...',
+            "Thanks for your time come back soon...",
+            "success"
+          );
+        } else {
+          swal(
+            'Oops...',
+            "An unexpected error has occurred...",
+            "error"
+          );
+        }
+      });
+    }
   }
 };
 </script>

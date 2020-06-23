@@ -3,12 +3,11 @@
     <div class="clearfix"></div>
     <div class="carousel-inner">
       <div class="carousel-item active">
-        <img class="slider-img" src="../assets/images/oder-payment.jpg" v-if="actionBtnRegister"/>
-        <img class="slider-img" src="../assets/images/register-customer.jpg" v-else-if="actionBtnPayment"/>
+        <img class="slider-img" src="../assets/images/register-customer.jpg" v-if="actionBtnRegister"/>
+        <img class="slider-img" src="../assets/images/oder-payment.jpg" v-if="actionPayment"/>
         <div class="carousel-caption d-md-block">
-          <h5>{{title}}</h5>
+          <h3>{{title}}</h3>
           <button @click="redirectPayment()" class="btn btn-secondary" v-if="actionBtnRegister">{{nameBtn}}</button>
-          <button @click="redirectHome()" class="btn btn-secondary" v-else-if="actionBtnPayment">{{nameBtn}}</button>
         </div>
       </div>
     </div>
@@ -18,13 +17,14 @@
 <script>
 export default {
   name: "SliderComponent",
-  props: ['title', 'nameBtn', 'actionBtnPayment', 'actionBtnRegister'],
+  props: ['title', 'nameBtn', 'actionPayment', 'actionBtnRegister'],
   methods: {
     redirectPayment(){
-      this.$router.push("/payment");
-    },
-    redirectHome(){
-      this.$router.push("/home");
+      if(localStorage.getItem('token')) {
+        this.$router.push("/payment");
+      } else {
+        this.$router.push("/login");
+      }
     }
   }
 };

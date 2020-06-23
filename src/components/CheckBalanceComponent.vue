@@ -24,12 +24,8 @@
           <div class="error" v-if="summitted && !$v.check.phone.required">This field is required</div>
           <div
             class="error"
-            v-else-if="(summitted && !$v.check.phone.numeric) || (summitted && !$v.check.phone.minLength)"
-          >Phone must be numeric min 7</div>
-          <div
-            class="error"
-            v-else-if="summitted && !$v.check.phone.maxLength"
-          >Phone must be numeric max 15</div>
+            v-else-if="(summitted && !$v.check.phone.phone) || !$v.check.phone.maxLength"
+          >Example format +57 (123) 456-7890</div>
         </div>
       </div>
 
@@ -43,12 +39,15 @@ import Check from "../models/Check";
 import axios from "axios";
 import progressbar from '../main';
 import Global from "../Global";
+import swal from "sweetalert";
 import {
   required,
   numeric,
   minLength,
-  maxLength
+  maxLength,
+  helpers
 } from "vuelidate/lib/validators";
+const phone = helpers.regex("phone", /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
 
 export default {
   name: "CheckBalanceComponent",
@@ -62,9 +61,8 @@ export default {
       },
       phone: {
         required,
-        numeric,
-        minLength: minLength(7),
-        maxLength: maxLength(15)
+        phone,
+        maxLength: maxLength(18)
       }
     }
   },
@@ -89,7 +87,8 @@ export default {
         this.alert_danger = false;
         this.alert_warning = false;
         progressbar.$Progress.start();
-        axios.get(Global.url + "check-balance/" + this.check.dni + '/' +  this.check.phone)
+        this.$store
+        .dispatch("checkBalance",this.check.dni+'/'+this.check.phone)
         .then(res => {
           progressbar.$Progress.finish();
           if (res.data.status == "success") {
@@ -111,6 +110,7 @@ export default {
           }
         })
         .catch(err => {
+          console.log(err)
           progressbar.$Progress.fail(); 
           this.message =
             "Sorry An unexpected Error Ocurred Try Again";

@@ -1,21 +1,40 @@
 <template>
   <div>
-    <Header />
+    <Header location="home" />
     <Slider
-      title="You Can Make Immediate Payments With Just One Click..."
+      title="Up to 10x faster. You can generate payments,
+             consult, recharge your wallet and everything in a few minutes"
       nameBtn="PAYMENT ORDER"
       actionBtnRegister="true"
     />
 
-    <div class="center">
-      <section id="content">
+    <div class="center-register">
+      <section class="content">
         <h1 class="subheader text-center">REGISTER CUSTOMER</h1>
 
         <form class="mid-form" @submit.prevent="registerCustomer">
           <div v-if="(alert_danger)" class="alert alert-danger" role="alert">{{message}}</div>
 
           <div class="form-row">
-            <div class="form-group col-md-12">
+
+            <div class="form-group col-md-6">
+              <input
+                type="text"
+                v-model="register.email"
+                class="form-control"
+                placeholder="Insert email"
+              />
+              <div
+                class="error"
+                v-if="summitted && !$v.register.email.required"
+              >This field is required</div>
+              <div
+                class="error"
+                v-else-if="summitted && !$v.register.email.email"
+              >The email must be in a valid format</div>
+            </div>
+            
+            <div class="form-group col-md-6">
               <input
                 type="text"
                 v-model="register.dni"
@@ -35,6 +54,47 @@
                 v-else-if="summitted && !$v.register.dni.maxLength"
               >DNI must be numeric max 15</div>
             </div>
+
+            <div class="form-group col-md-6">
+              <input
+                type="password"
+                v-model="register.password"
+                class="form-control"
+                placeholder="Insert password"
+              />
+              <div
+                class="error"
+                v-if="summitted && !$v.register.password.required"
+              >Password is required</div>
+              <div
+                class="error"
+                v-else-if="summitted && !$v.register.password.minLength"
+              >Password must be at least 6 characters</div>
+              <div
+                class="error"
+                v-else-if="summitted && !$v.register.password.maxLength"
+              >DNI must be numeric max 15</div>
+              
+            </div>
+
+            <div class="form-group col-md-6">
+              <input
+                type="password"
+                v-model="register.confirmPassword"
+                class="form-control"
+                placeholder="Confirm password"
+              />
+              <div
+                class="error"
+                v-if="summitted && !$v.register.confirmPassword.required"
+              >Confirm Password is required</div>
+              <div
+                class="error"
+                v-else-if="summitted && !$v.register.confirmPassword.sameAsPassword"
+              >Passwords must match</div>
+          
+            </div>
+
             <div class="form-group col-md-6">
               <input
                 type="text"
@@ -67,7 +127,7 @@
                 v-else-if="(summitted && !$v.register.last_name.alpha) || (summitted && !$v.register.last_name.minLength)"
               >Last name must contain only letters 3 min</div>
             </div>
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-12">
               <input
                 type="text"
                 v-model="register.phone"
@@ -80,29 +140,10 @@
               >This field is required</div>
               <div
                 class="error"
-                v-else-if="(summitted && !$v.register.phone.numeric) || (summitted && !$v.register.phone.minLength)"
-              >Phone must be numeric min 7</div>
-              <div
-                class="error"
-                v-else-if="summitted && !$v.register.phone.maxLength"
-              >Phone must be numeric max 15</div>
+                v-else-if="(summitted && !$v.register.phone.phone) || !$v.register.phone.maxLength"
+              >Example format +57 (123) 456-7890</div>
             </div>
-            <div class="form-group col-md-6">
-              <input
-                type="text"
-                v-model="register.email"
-                class="form-control"
-                placeholder="Insert email"
-              />
-              <div
-                class="error"
-                v-if="summitted && !$v.register.email.required"
-              >This field is required</div>
-              <div
-                class="error"
-                v-else-if="summitted && !$v.register.email.email"
-              >The email must be in a valid format</div>
-            </div>
+            
           </div>
 
           <div class="clearfix"></div>
@@ -112,11 +153,6 @@
         </form>
       </section>
 
-      <aside id="sidebar">
-        <RechargeWallet />
-        <CheckBalance />
-      </aside>
-
       <div class="clearfix"></div>
     </div>
     <Footer />
@@ -125,8 +161,6 @@
 
 <script>
 import Slider from "./SliderComponent";
-import RechargeWallet from "./RechargeWalletComponent";
-import CheckBalance from "./CheckBalanceComponent";
 import Header from "./common/HeaderComponent";
 import Footer from "./common/FooterComponent";
 import Register from "../models/Register";
@@ -140,27 +174,39 @@ import {
   minLength,
   maxLength,
   email,
-  helpers
+  helpers,
+  sameAs
 } from "vuelidate/lib/validators";
 
 const alpha = helpers.regex("alpha", /^[A-Za-z _]*[A-Za-z][A-Za-z _]*$/);
-const phone = helpers.regex("phone", /^\+{1}[0-9]{9,15}$/);
+const phone = helpers.regex("phone", /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
 export default {
   name: "RegisterCustomerComponent",
   components: {
     Slider,
-    RechargeWallet,
-    CheckBalance,
     Header,
     Footer
   },
   validations: {
     register: {
+      email: {
+        required,
+        email
+      },
       dni: {
         required,
         numeric,
         minLength: minLength(5),
         maxLength: maxLength(15)
+      },
+      password: {
+        required,
+        minLength: minLength(6),
+        maxLength: maxLength(15)
+      },
+      confirmPassword: {
+        required,
+        sameAsPassword: sameAs('password')
       },
       name: {
         required,
@@ -174,14 +220,9 @@ export default {
       },
       phone: {
         required,
-        numeric,
-        minLength: minLength(7),
-        maxLength: maxLength(15)
+        phone,
+        maxLength: maxLength(18)
       },
-      email: {
-        required,
-        email
-      }
     }
   },
   data() {
@@ -189,7 +230,7 @@ export default {
       alert_danger: false,
       summitted: false,
       message: String,
-      register: new Register("", "", "", "", "")
+      register: new Register("", "", "", "", "","","")
     };
   },
   methods: {
@@ -236,4 +277,5 @@ export default {
     }
   }
 };
+
 </script>

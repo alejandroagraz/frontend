@@ -1,8 +1,8 @@
 class Payment {
-    constructor(dni, phone, emamount_payableail) {
+    constructor(dni, phone, amount_payable) {
         this.dni = dni;
         this.phone = phone;
-        this.emamount_payableail = emamount_payableail;
+        this.amount_payable = amount_payable;
     }
 }
 
