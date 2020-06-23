@@ -1,13 +1,13 @@
 <template>
   <div>
-    <Header />
+    <Header location="payment"/>
     <Slider
-      title="You Can Make Immediate Register Customer With Just One Click..."
-      nameBtn="REGISTER CUSTOMER"
-      actionBtnPayment="false"
+      title="Our new website gives you easy access so you can make inquiries,
+             payments and top-ups, all in less than a minute."
+      actionPayment="true"
     />
 
-    <div class="center">
+   <div class="center">
       <section id="content">
         <h1 class="subheader text-center">MAKE PAYMENT</h1>
 
@@ -37,12 +37,8 @@
             <div class="error" v-if="summitted && !$v.payment.phone.required">This field is required</div>
             <div
                 class="error"
-                v-else-if="(summitted && !$v.payment.phone.numeric) || (summitted && !$v.payment.phone.minLength)"
-              >Phone must be numeric min 7</div>
-              <div
-                class="error"
-                v-else-if="summitted && !$v.payment.phone.maxLength"
-              >Phone must be numeric max 15</div> 
+                v-else-if="(summitted && !$v.payment.phone.phone) || !$v.payment.phone.maxLength"
+              >Example format +57 (123) 456-7890</div>
           </div>
 
           <div class="form-group">
@@ -94,11 +90,11 @@
                   <div class="form-group">
                     <input
                       type="text"
-                      v-model="confirmPayment.token"
+                      v-model="confirmPayment.token_email"
                       class="form-control"
                       placeholder="Insert Token"
                     />
-                    <div class="error" v-if="summitted && !$v.confirmPayment.token.required">This field is required</div>
+                    <div class="error" v-if="summitted && !$v.confirmPayment.token_email.required">This field is required</div>
                   </div>
                   <div class="modal-footer">
                     <button
@@ -138,7 +134,9 @@ import axios from "axios";
 import progressbar from '../main';
 import Global from "../Global";
 import swal from "sweetalert";
-import { required, numeric, minLength, maxLength } from "vuelidate/lib/validators";
+import { required, numeric, minLength, maxLength, helpers } from "vuelidate/lib/validators";
+
+const phone = helpers.regex("phone", /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
 
 
 export default {
@@ -160,9 +158,8 @@ export default {
       },
       phone: {
         required,
-        numeric,
-        minLength: minLength(7),
-        maxLength: maxLength(15)
+        phone,
+        maxLength: maxLength(18)
       },
       amount_payable: {
         required,
@@ -170,7 +167,7 @@ export default {
       }
     },
     confirmPayment: {
-      token: {
+      token_email: {
         required
       }
     }
@@ -195,7 +192,8 @@ export default {
       } else {
         progressbar.$Progress.start();
         this.alert_danger_payment = false;
-        axios.post(Global.url + "payment", this.payment)
+        this.$store
+        .dispatch("payment",this.payment)
         .then(res => {
           progressbar.$Progress.finish();
           if (res.data.status == "success") {
@@ -209,6 +207,14 @@ export default {
             }, 10000);
             this.$refs.activateModal.click();
             this.summitted = false;
+          } else if (res.data.status == "err" && res.data.message == "Your session has expired") {
+            this.$store.dispatch("logout");
+            this.$router.push('/home');
+            swal(
+              'Oops...',
+              res.data.message + '...',
+              "error"
+            );
           } else if (res.data.status == "err") {
             this.message = res.data.message;
             this.alert_danger_payment = true;
@@ -240,7 +246,8 @@ export default {
         progressbar.$Progress.start();
         this.alert_danger = false;
         this.alert_danger_confirm = false;
-        axios.post(Global.url + "confirm-payment", this.confirmPayment)
+        this.$store
+        .dispatch("confirmPayment",this.confirmPayment)
         .then(res => {
           progressbar.$Progress.finish();
           if (res.data.status == "success") {
@@ -253,11 +260,19 @@ export default {
             this.payment = new Payment();
             this.confirmPayment = new ConfirmPayment();
             this.summitted = false;
+          } else if (res.data.status == "err" && res.data.message == "Your session has expired") {
+            this.$store.dispatch("logout");
+            this.$router.push('/home');
+            swal(
+              'Oops...',
+              res.data.message + '...',
+              "error"
+            );
           } else if (res.data.status == "err") {
             this.message = res.data.message;
             this.alert_success = false;
             this.alert_danger_confirm = true;
-            this.confirmPayment.token = "";
+            this.confirmPayment.token_email = "";
             setTimeout(() => {
               this.alert_danger_confirm = false;
             }, 10000);

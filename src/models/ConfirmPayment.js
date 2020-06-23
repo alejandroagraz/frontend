@@ -1,8 +1,8 @@
 class ConfirmPayment {
-    constructor(id, amount_payable, token, session_id) {
+    constructor(id, amount_payable, token_email, session_id) {
         this.id = id;
         this.amount_payable = amount_payable;
-        this.token = token;
+        this.token_email = token_email;
         this.session_id = session_id;
     }
 }

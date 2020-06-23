@@ -61,12 +61,8 @@
                 >This field is required</div>
                 <div
                   class="error"
-                  v-else-if="(summitted && !$v.recharge.phone.numeric) || (summitted && !$v.recharge.phone.minLength)"
-                >Phone must be numeric min 7</div>
-                <div
-                  class="error"
-                  v-else-if="summitted && !$v.recharge.phone.maxLength"
-                >Phone must be numeric max 15</div>
+                  v-else-if="(summitted && !$v.recharge.phone.phone) || !$v.recharge.phone.maxLength"
+                >Example phone format +57 (123) 456-7890</div>
               </div>
               <div class="form-group">
                 <input
@@ -102,8 +98,11 @@ import {
   required,
   numeric,
   minLength,
-  maxLength
+  maxLength,
+  helpers
 } from "vuelidate/lib/validators";
+
+const phone = helpers.regex("phone", /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
 
 export default {
   name: "RechargeWalletComponent",
@@ -117,9 +116,8 @@ export default {
       },
       phone: {
         required,
-        numeric,
-        minLength: minLength(7),
-        maxLength: maxLength(15)
+        phone,
+        maxLength: maxLength(18)
       },
       balance: {
         required,
@@ -144,7 +142,8 @@ export default {
       } else {
         progressbar.$Progress.start();
         this.alert_danger = false;
-        axios.put(Global.url + "recharge-wallet", this.recharge)
+        this.$store
+        .dispatch("rechargeWallet",this.recharge)
         .then(res => {
           progressbar.$Progress.finish();
           if (res.data.status == "success") {
@@ -155,6 +154,14 @@ export default {
               res.data.message,
               "Thank you for completing the recharge of the wallet...",
               "success"
+            );
+          } else if (res.data.status == "err" && res.data.message == "Your session has expired") {
+            this.$store.dispatch("logout");
+            this.$router.push('/home');
+            swal(
+              'Oops...',
+              res.data.message + '...',
+              "error"
             );
           } else {
             this.message = res.data.message;

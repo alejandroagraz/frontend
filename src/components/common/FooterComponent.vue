@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-secondary text-white">
+  <footer>
     <div>
       <p class="text-center">
       &copy;
@@ -12,6 +12,6 @@
 </template>
 <script>
 export default {
-  name: "FooterComponent"
+  name: "FooterComponent",
 };
 </script>
