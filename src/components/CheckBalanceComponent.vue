@@ -99,7 +99,15 @@ export default {
             }, 30000);
             this.check = new Check();
             this.summitted = false;
-          } else {
+          } else if (res.data.status == "err" && res.data.message == "Your session has expired") {
+            this.$store.dispatch("logout");
+            this.$router.push('/home');
+            swal(
+              'Oops...',
+              res.data.message + '...',
+              "error"
+            );
+          } else if (res.data.status == "err") {
             this.message = res.data.message;
             this.alert_danger = true;
             setTimeout(() => {
@@ -110,7 +118,6 @@ export default {
           }
         })
         .catch(err => {
-          console.log(err)
           progressbar.$Progress.fail(); 
           this.message =
             "Sorry An unexpected Error Ocurred Try Again";

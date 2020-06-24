@@ -27,10 +27,24 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="nav">
           <li class="nav-item" v-if="location == 'payment'">
-            <span class="fas fa-sign-out-alt" style="font-size:48px;" @click="logout"></span>
+            <div class="d-none d-sm-none d-md-block" @click="logout">
+              <span class="fas fa-sign-out-alt" style="font-size:48px;"></span>
+            </div>
+            <div class="d-block d-sm-block d-md-none"  @click="login">
+              <span class="fas fa-sign-out-alt" style="font-size:18px;">
+                Sign out
+              </span>
+            </div>            
           </li>
           <li class="nav-item" v-if="location == 'home'">
-            <span class="fas fa-sign-in-alt" style="font-size:48px;" @click="login"></span>
+            <div class="d-none d-sm-none d-md-block"  @click="login">
+              <span class="fas fa-sign-in-alt" style="font-size:48px;"></span>
+            </div>
+            <div class="d-block d-sm-block d-md-none"  @click="login">
+              <span class="fas fa-sign-in-alt" style="font-size:18px;">
+                Sign in
+              </span>
+            </div> 
           </li>
         </ul>
       </div>
